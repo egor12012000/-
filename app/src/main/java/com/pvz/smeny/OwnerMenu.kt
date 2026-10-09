@@ -214,4 +214,99 @@ fun AddPvzScreen(onAddPvz: (String, String) -> Unit, onBack: () -> Unit) {
                         onBack()
                     }
                 },
-                modifier = Modifier
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED))
+            ) { Text("Сохранить") }
+        }
+    }
+}
+
+@Composable
+fun AddEmpScreen(
+    pvzList: List<Pvz>,
+    onAddEmployee: (String, String, Int) -> Unit,
+    onBack: () -> Unit
+) {
+    if (pvzList.isEmpty()) {
+        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+            TopBar("Добавить сотрудника", onBack)
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Сначала добавьте пункт", color = Color(0xFF8E8E93))
+            }
+        }
+        return
+    }
+
+    var email by remember { mutableStateOf("") }
+    var selectedPvz by remember { mutableStateOf(pvzList.first().id) }
+    var salary by remember { mutableStateOf("2500") }
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+        TopBar("Добавить сотрудника", onBack)
+        Column(modifier = Modifier.padding(24.dp)) {
+            OutlinedTextField(
+                value = email, onValueChange = { email = it },
+                label = { Text("Email сотрудника") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
+            )
+            Spacer(Modifier.height(16.dp))
+
+            Box {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    val p = pvzList.find { it.id == selectedPvz }
+                    Text("${p?.service} — ${p?.address}")
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    pvzList.forEach { p ->
+                        DropdownMenuItem(
+                            text = { Text("${p.service} — ${p.address}") },
+                            onClick = { selectedPvz = p.id; expanded = false }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = salary, onValueChange = { salary = it },
+                label = { Text("Зарплата за смену (₽)") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
+            )
+            Spacer(Modifier.height(24.dp))
+            Button(
+                onClick = {
+                    val s = salary.toIntOrNull() ?: 0
+                    if (email.isNotBlank() && s > 0) {
+                        onAddEmployee(email, selectedPvz, s)
+                        onBack()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED))
+            ) { Text("Добавить") }
+        }
+    }
+}
+
+@Composable
+fun TopBar(title: String, onBack: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Назад") }
+        Spacer(Modifier.width(8.dp))
+        Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    }
+}
